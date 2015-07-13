@@ -151,7 +151,7 @@ int main(int argc, char** argv){
         cl::NDRange global(1);
         cl::NDRange local(1);
 #else
-        cl::NDRange global(LENGTH);
+        cl::NDRange global(LENGTH/16);
         cl::NDRange local(wgSize);
 #endif
 
