@@ -5,3 +5,5 @@ CMakeFiles
 vectoradd
 phi
 cpu
+Makefile
+cmake_install.cmake
