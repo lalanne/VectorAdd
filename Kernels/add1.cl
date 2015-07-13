@@ -7,8 +7,6 @@
     #define TYPE float
 #endif
 
-#define ELEMENTS_PER_WI 16
-
 __kernel
 void add(__global TYPE* a, __global TYPE* b, __global TYPE* c){
 

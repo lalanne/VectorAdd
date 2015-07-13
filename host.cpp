@@ -9,6 +9,7 @@
 
 using namespace std;
 
+//const uint32_t LENGTH = 2147483648; /*maximum reached on the CPU ~25GB*/
 //const uint32_t LENGTH = 268435456;
 const uint32_t LENGTH = 134217728;
 //const uint32_t OPS_PER_WI = 4096;
@@ -57,6 +58,10 @@ int main(int argc, char** argv){
     cout << "kernel file: " << kernelFile << "\n";
     const uint32_t wgSize = atoi(argv[2]);
     cout << "WGsize " << wgSize << endl;
+
+    uint32_t elementsPerWi = 0;
+    if(argc == 4) elementsPerWi = atoi(argv[3]);
+    else elementsPerWi = 1;
 
     TYPE* a = new TYPE[LENGTH]{(TYPE)0.0f};
     TYPE* b = new TYPE[LENGTH]{(TYPE)0.0f};
@@ -123,7 +128,8 @@ int main(int argc, char** argv){
 #else
         const string vectorisationLine = "";
 #endif
-        const string compilationLine = deviceLine + vectorisationLine;
+        const string userLine = " -DELEMENTS_PER_WI="+to_string(elementsPerWi);
+        const string compilationLine = deviceLine + vectorisationLine + userLine;
 
         cout << "Kernel compilation line: " << compilationLine << "\n\n";
 
@@ -151,7 +157,7 @@ int main(int argc, char** argv){
         cl::NDRange global(1);
         cl::NDRange local(1);
 #else
-        cl::NDRange global(LENGTH/16);
+        cl::NDRange global(LENGTH/elementsPerWi);
         cl::NDRange local(wgSize);
 #endif
 
