@@ -9,7 +9,8 @@
 
 using namespace std;
 
-const uint32_t LENGTH = 4194304;
+//const uint32_t LENGTH = 268435456;
+const uint32_t LENGTH = 134217728;
 //const uint32_t OPS_PER_WI = 4096;
 //const float GOPS = (float)OPS_PER_WI*LENGTH/1e9f;
 
@@ -47,13 +48,15 @@ int ocl_read_binary(const char *filename, char* &buffer)
 }
 
 int main(int argc, char** argv){
-    if (argc < 2){ 
-        cout<<argv[0]<<" <kernel_file>"<<endl;
+    if (argc < 3){ 
+        cout<< argv[0] << " <kernel_file>" << " <WGsize>" << endl;
         return -1;
     }
 
     const string kernelFile = argv[1];
     cout << "kernel file: " << kernelFile << "\n";
+    const uint32_t wgSize = atoi(argv[2]);
+    cout << "WGsize " << wgSize << endl;
 
     TYPE* a = new TYPE[LENGTH]{(TYPE)0.0f};
     TYPE* b = new TYPE[LENGTH]{(TYPE)0.0f};
@@ -127,7 +130,7 @@ int main(int argc, char** argv){
         //build program for these specific devices
         program.build(devices, compilationLine.c_str());
         //make kernel
-        cl::Kernel kernel(program, "madd");
+        cl::Kernel kernel(program, "add");
 
         //create device memory buffers
         cl::Buffer d_a = cl::Buffer(context, CL_MEM_READ_ONLY, LENGTH*sizeof(TYPE));
@@ -149,7 +152,7 @@ int main(int argc, char** argv){
         cl::NDRange local(1);
 #else
         cl::NDRange global(LENGTH);
-        cl::NDRange local(256);
+        cl::NDRange local(wgSize);
 #endif
 
         float timeMS = 0.0f;
@@ -179,6 +182,16 @@ int main(int argc, char** argv){
 #ifdef __PRINT_RESULTS__
         for(uint32_t i=0; i<LENGTH; ++i) cout<<c[i]<<"\n"; 
 #endif
+        
+        bool success = true;
+        for(uint32_t i=0; i<LENGTH; ++i){
+            if(c[i] != 10){
+                cout << "ERROR element " << i << endl; 
+                success = false;
+                break;
+            }
+        } 
+        if(success) cout << "Results verified......OK" << endl;
 
 #ifdef __FPGA__
         delete [] bin;
